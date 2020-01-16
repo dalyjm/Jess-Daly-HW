@@ -1,0 +1,72 @@
+---
+title: "R basics Daly"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+R Basics Homework
+
+
+I set my working directory folder using setwd.
+```{r}
+setwd("~/R")
+```
+
+I import the dataset tgpp using the read.csv command.
+```{r}
+tgpp <-read.csv("~/R/tgpp.csv")
+```
+1.
+```{r}
+colnames(tgpp)
+```
+Names of columns include plot, year, record_id, corner, sclae, richness, easting, northing, slope, ph, and yrsslb.
+
+2.
+```{r}
+nrow(tgpp)
+ncol(tgpp)
+```
+There are 11 columns and 4,080 rows.
+
+3.
+```{r}
+sapply(tgpp, class)
+```
+Plot, year, record ID, corner, richness, easting, northing, and slope are integers. Scale, pH, and yrsslb are numeric. The sapply function returns the information requested (in this case, classes for the data in tgpp) in a matrix.
+
+4.
+```{r}
+tgpp[1,3]
+tgpp[5,7]
+tgpp[8,10]
+```
+The value for row 1 and column 3 is 187; for row 5 and column 7 is 727,000, and for row 8 and column 10 is 6.9. The hard brackets are used to identify specific numbers given the associated row and column.
+
+5.
+```{r}
+x<-tgpp$scale
+y<-tgpp$richness
+plot(x, y, xlab="Quadrat Area (m^2)", ylab="Richness", col="#00AFBB")
+```
+
+First I defined x and y as scale and richness using the $, then used the xlab and ylab functions to set my labels for my axes. The col function changes the color of the points.
+
+
+6. 
+```{r}
+plot(x, y, xlab="Quadrat Area (m^2)", ylab="Richness", col="#00AFBB", log='xy')
+```
+
+Adding log='xy' has changed the scale of both the x and y axes, and the data now fits better in the graph window than it did prior to log transformation. Overall this makes the data easier to read and you may be able to interpret more from looking at it.
+
+
+
+
+
+
+
