@@ -1,0 +1,136 @@
+---
+title: "Jess Daly univariate hw"
+output: html_document
+---
+1. 
+
+read in tree dataset
+
+```{r}
+trees <- read.csv('https://raw.githubusercontent.com/dmcglinn/quant_methods/gh-pages/data/treedata_subset.csv')
+```
+
+specify I'm only interested in looking at the fir and the red maple, and then create a 
+vector for cover for each type of tree
+```{r}
+fir <- trees[trees$species == "Abies fraseri", ]
+maple <- trees[trees$species == "Acer rubrum", ]
+cfir<-fir$cover
+cmap<-maple$cover
+```
+
+I created plots to invesigate the relationship for each of the non-catigorical variables (elevation, tci, stream distance, and beers) for each tree. Each of the colors represents one of the three disturbance values, which is the only other discrete variable and should also be considered.
+
+```{r}
+colors <- c("#00AFBB", "#E7B800", "#FC4E07")
+colors <- colors[as.numeric(fir$disturb)]
+colors <- colors[as.numeric(maple$disturb)]
+plot(cfir,fir$elev, col=colors)
+plot(cmap,maple$elev, col=colors)
+```
+
+From looking at the elevation plots, it seems like maples are more evenly distributed than firs between different elevations. That is, there seems to be a positive relaionship between cover and elevation in the firs, but this does not look to be the case for the maples. However in the maples there does look like there is some kind of relationship between disturbance history and elevation. This would make sense since disturbance history describes logging activity, which would probably be happening in concentrated areas. Additionally from looking at the plots clearly there are more red maples than firs in the forest.
+
+
+```{r}
+plot(cfir,fir$tci, col=colors)
+plot(cmap,maple$tci, col=colors)
+```
+
+There does not appear to be much of a relationship between tci (topographic convergence index) and cover for either species. However from this plot it seems like firs tended to have high covers in the areas which they are present (majorit of points fall above 5, whereas maples look far more evenly distributed between 0-10). 
+
+
+```{r}
+plot(cfir,fir$streamdist, col=colors)
+plot(cmap,maple$streamdist, col=colors)
+```
+
+Maples do not appear to show a relationship between cover and distance to the nearest stream. Firs look like there may be a vague positive relationship between the two.
+
+
+```{r}
+plot(cfir,fir$beers, col=colors)
+plot(cmap,maple$beers, col=colors)
+```
+
+Once again maples do not appear to show a relationship between transformed slope aspect and cover, while firs look like they may show a vague positive trend. 
+
+In order to gather more information and actually determine if there are relationships between these variables, I will run several models. 
+
+
+First I ran ANOVAS for each type of tree.
+```{r}
+firanova<-aov(cover~disturb, data=fir)
+summary(firanova)
+```
+```{r}
+mapanova<-aov(cover~disturb, data=maple)
+summary(mapanova)
+```
+
+ANOVAs indicate there is a significant effect of disturbance on the firs, but not on the maples. 
+
+Next I will use a linear model in order to examine the effects of all of the variables. ANOVAs only work with catigorical variables, so a liner model needs to be used here instead because several of the variables are numeric.
+
+```{r}
+linmodfir<-lm(cover~elev+tci+streamdist+beers, data=fir)
+summary(linmodfir)
+```
+Elevation is shown to be the only significant variable affecting cover. It should be noted that the p-value for tci is low, and with a greater sample size may have been found to be significant.
+
+```{r}
+linmodmap<-lm(cover~elev+tci+streamdist+beers, data=maple)
+summary(linmodmap)
+```
+
+All variables except tci were found to be significant (and tci value was very close to 0.05), so it can be said that elevation, stream distance, and transformed slope aspect affect red maple cover. This was not easy to see in the plots, which is why it's important to run actual numerical analyses. However, one of the assumptions to run a linear model is that the data is in fact linear. The R squared value for maples is very low, indicating the data is not linear. Looking at the plots for maples especially, it can be visually confirmed that the data is not linear and thus perhaps a lm isn't a suitable method of analysis. Variance in firs will be more accurately desribed because the data is more suited to the method of analysis.
+
+2.
+
+I re-examine the data using a GLM with a Poisson distribution, which makes cover a continuous variable instead of a discrete one. 
+
+```{r}
+firpoi<-glm(cover~elev+tci+streamdist+beers, data=fir, family='poisson')
+summary(firpoi)
+```
+
+```{r}
+mappoi<-glm(cover~elev+tci+streamdist+beers, data=maple, family='poisson')
+summary(mappoi)
+```
+
+```{r}
+fir_r2 = function(firpoi) {
+                1 -  firpoi$deviance / firpoi$null.deviance
+}
+fir_r2(firpoi)
+```
+
+```{r}
+map_r2 = function(mappoi) {
+                1 -  mappoi$deviance / mappoi$null.deviance
+}
+map_r2(mappoi)
+```
+
+Results from the glm are very similar to the results from the lm, with the same variables found to be significant for each tree type. The R squared value improves slightly for firs, while the value remains equally poor in the maples.
+
+3.
+
+In summary, the cover of fir trees seems to be influenced greatly by elevation. Seeing as we knew that firs were habitat specialists before the beginning of the exercise, this  makes sense- we can infer they do well at high elevations. While many factors were identified as significantly affecting cover for maples, the models returned very low R squared values for these trees, suggesting the models weren't appropriate. Maples are generalists and seem to be found just about everywhere, and their plots showed minimal pattern, which would be expected of a generalist species that is capable of surviving in a wide array of conditions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
