@@ -1,0 +1,119 @@
+---
+title: "jess daly multivariate hw"
+output: html_document
+---
+
+```{r}
+library(vegan)
+data("dune")
+data("dune.env")
+?dune
+```
+
+make an NMDS plot that emphasises moisture
+
+```{r}
+dune_mds<-metaMDS(dune)
+```
+
+```{r}
+dune.env$Moisture<-factor(dune.env$Moisture, levels= 1:5, ordered=FALSE)
+plot(dune_mds, type='n')
+ text(dune_mds, 'sp', cex=.5)
+ color_vect = rev(terrain.colors(6))[-1]
+ points(dune_mds, 'sites', pch=19, 
+        col=color_vect[dune.env$Moisture])
+ legend('topright', paste("Moisture =", 1:5, sep=''), 
+        col=color_vect, pch=19)
+```
+
+Performing an indirect ordination, like an NMDS, means that we are analyzing a single martix. We get a bit of data about a lot of things and are able to see more of "the whole picture." The plot visually sorts the data by color (ie different colors are different moisture levels) so it becomes easy to identify potential patterns. Most of the "5" ranked dots are to the right, while the "1" ranked dots are clustered left. We may be able to suggest that all of those plants in one area prefer a certain climate. However it is difficult to get much more information about what specific factors may be influencing the position of the dots, because the axes "NMDS 1 and 2" do not contain information that can be readily pulled out about land use/manure/management. This method is not good for analyzing the effects of one specific factor.
+
+
+2.
+
+First run CCA on the entire dataset.
+
+```{r}
+cca_dune = cca(dune ~ ., data=dune.env)
+RsquareAdj(cca_dune, 100)
+```
+
+The R2 is quite high, which indicates that the datapoints fit the line predicted by the model well. However, the adjusted R squared is much lower than the non-adjusted. This tells you that this model is not a very good fit for the data, and that most of the variation that is explained by the model is no different than what would be expected due to random chance, and/or there's lots of white noise (unneccesary variables) included in the model. 
+
+```{r}
+anova(cca_dune, permutations=999, by="margin")
+```
+
+From the ANOVA it looks like moisture and A1 (soil thickness) are the most important variable, followed by manure and management.
+
+```{r}
+plot(cca_dune)
+```
+
+Just from eyeballing, manure looks important and as though the arrows are the most divergent, but it's very hard to tell. I run CCAs and ANOVAs for each of the variables I named above to gain more information.
+
+
+```{r}
+cca_A1 = cca(dune ~ A1, data=dune.env)
+RsquareAdj(cca_A1, 100)
+```
+```{r}
+anova(cca_A1, permutations=999, by="margin")
+```
+```{r}
+plot(cca_A1)
+```
+
+
+```{r}
+cca_moist = cca(dune ~ Moisture, data=dune.env)
+RsquareAdj(cca_moist, 100)
+```
+```{r}
+anova(cca_moist, permutations=999, by="margin")
+```
+```{r}
+plot(cca_moist)
+```
+
+```{r}
+cca_poo = cca(dune ~ Manure, data=dune.env)
+RsquareAdj(cca_poo, 100)
+```
+```{r}
+anova(cca_poo, permutations=999, by="margin")
+```
+```{r}
+plot(cca_poo)
+```
+
+```{r}
+cca_man = cca(dune ~ Management, data=dune.env)
+RsquareAdj(cca_man, 100)
+```
+```{r}
+anova(cca_man, permutations=999, by="margin")
+```
+```{r}
+plot(cca_man)
+```
+
+Patterns emerge in all of the model plots except A1, which only produces a single vector). ANOVAs found all tested variables to be significant. However, all of them show a large decrease between the R2 and adjusted R2, which suggests there may be an issue with data fitting the model.
+
+3.
+
+The models seem to compliment each other, nothing seems to contradict anything else. The NMDS suggested that some combination of factors was generating a pattern in dune vegetation cover, though the only thing clearly visible was species names and associated moisture levels. The CCAs allow for looking at specific variables. The same general patterns fall out of each CCA (ie 2 quantities grouped near the top of the y axis, one on the let side on the x axis, and one around halfway on the y axis), indicating that something inherent to the environments may be underlying everything. I wouldn't say one model is better than the other, it more just depends what specific question you're trying to answer or what you're interested in.
+
+
+
+
+
+
+
+
+
+
+
+
+
